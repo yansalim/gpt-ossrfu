@@ -1,0 +1,70 @@
+services:
+  llamacpp:
+    image: ghcr.io/ggerganov/llama.cpp:full
+    container_name: gpt-ossrfu-llamacpp
+    command: >
+      --server
+      -m /models/${MODEL_FILENAME:-qwen2.5-0.5b-instruct-q5_k_m.gguf}
+      -c ${N_CTX:-4096}
+      -ngl ${N_GPU_LAYERS:-0}
+      -t ${CPU_THREADS:-8}
+      --host 0.0.0.0
+      --port ${LLAMA_PORT:-8000}
+    volumes:
+      - ./models:/models
+    ports:
+      - "${HOST_LLAMA_PORT:-8000}:${LLAMA_PORT:-8000}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:${LLAMA_PORT:-8000}/v1/models || curl -sf http://localhost:${LLAMA_PORT:-8000}/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  # >>> NOVO: servidor somente de embeddings, sem impactar o chat <<<
+  llamaemb:
+    image: ghcr.io/ggerganov/llama.cpp:full
+    container_name: gpt-ossrfu-llamaemb
+    command: >
+      --server
+      --embeddings                      # habilita /v1/embeddings e desativa completions
+      -m /models/${MODEL_EMB_FILENAME:-qwen2.5-0.5b-instruct-q5_k_m.gguf}
+      -t ${CPU_THREADS_EMB:-6}
+      --host 0.0.0.0
+      --port ${LLAMA_EMB_PORT:-8001}
+    volumes:
+      - ./models:/models
+    ports:
+      - "${HOST_LLAMA_EMB_PORT:-8001}:${LLAMA_EMB_PORT:-8001}"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:${LLAMA_EMB_PORT:-8001}/v1/models || curl -sf http://localhost:${LLAMA_EMB_PORT:-8001}/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: gpt-ossrfu-webui
+    environment:
+      - OPENAI_API_BASE_URL=http://llamacpp:${LLAMA_PORT:-8000}/v1
+      - OPENAI_API_KEY=dummy
+      - ENABLE_MODEL_SELECTOR=true
+      - WEBUI_AUTH=true
+      # (opcional) se quiser que o WebUI use o servidor de embeddings:
+      # - RAG_EMBEDDING_MODEL=default
+      # - RAG_EMBEDDING_OPENAI_API_BASE=http://llamaemb:${LLAMA_EMB_PORT:-8001}/v1
+      # - RAG_EMBEDDING_OPENAI_API_KEY=dummy
+    ports:
+      - "${HOST_WEBUI_PORT:-3000}:8080"
+    depends_on:
+      llamacpp:
+        condition: service_healthy
+    volumes:
+      - webui:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  webui:
