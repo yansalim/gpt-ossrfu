@@ -10,13 +10,14 @@ services:
       -t ${CPU_THREADS:-8}
       --host 0.0.0.0
       --port ${LLAMA_PORT:-8000}
+      --api-key ${LLAMA_API_KEY}
     volumes:
       - ./models:/models
     ports:
       - "${HOST_LLAMA_PORT:-8000}:${LLAMA_PORT:-8000}"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:${LLAMA_PORT:-8000}/v1/models || curl -sf http://localhost:${LLAMA_PORT:-8000}/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf -H 'Authorization: Bearer ${LLAMA_API_KEY}' http://localhost:${LLAMA_PORT:-8000}/v1/models || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -33,13 +34,14 @@ services:
       -t ${CPU_THREADS_EMB:-6}
       --host 0.0.0.0
       --port ${LLAMA_EMB_PORT:-8001}
+      --api-key ${LLAMA_API_KEY}
     volumes:
       - ./models:/models
     ports:
       - "${HOST_LLAMA_EMB_PORT:-8001}:${LLAMA_EMB_PORT:-8001}"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:${LLAMA_EMB_PORT:-8001}/v1/models || curl -sf http://localhost:${LLAMA_EMB_PORT:-8001}/health || exit 1"]
+      test: ["CMD-SHELL", "curl -sf -H 'Authorization: Bearer ${LLAMA_API_KEY}' http://localhost:${LLAMA_EMB_PORT:-8001}/v1/models || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -50,13 +52,13 @@ services:
     container_name: gpt-ossrfu-webui
     environment:
       - OPENAI_API_BASE_URL=http://llamacpp:${LLAMA_PORT:-8000}/v1
-      - OPENAI_API_KEY=dummy
+      - OPENAI_API_KEY=${WEBUI_OPENAI_KEY}
       - ENABLE_MODEL_SELECTOR=true
       - WEBUI_AUTH=true
       # (opcional) se quiser que o WebUI use o servidor de embeddings:
-      # - RAG_EMBEDDING_MODEL=default
-      # - RAG_EMBEDDING_OPENAI_API_BASE=http://llamaemb:${LLAMA_EMB_PORT:-8001}/v1
-      # - RAG_EMBEDDING_OPENAI_API_KEY=dummy
+      - RAG_EMBEDDING_MODEL=default
+      - RAG_EMBEDDING_OPENAI_API_BASE=http://llamaemb:${LLAMA_EMB_PORT:-8001}/v1
+      - RAG_EMBEDDING_OPENAI_API_KEY=${WEBUI_OPENAI_KEY}
     ports:
       - "${HOST_WEBUI_PORT:-3000}:8080"
     depends_on:

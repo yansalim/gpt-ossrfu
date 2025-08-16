@@ -38,7 +38,7 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     environment:
       - OPENAI_API_BASE_URL=http://vllm:${VLLM_PORT:-8000}/v1
-      - OPENAI_API_KEY=${WEBUI_OPENAI_KEY:-dummy}
+      - OPENAI_API_KEY=${VLLM_API_KEY}
       - ENABLE_MODEL_SELECTOR=${ENABLE_MODEL_SELECTOR:-true}
       - WEBUI_AUTH=${WEBUI_AUTH:-true}
     ports:
