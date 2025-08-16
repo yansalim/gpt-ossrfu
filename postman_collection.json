@@ -1,0 +1,162 @@
+{
+	"info": {
+		"_postman_id": "a8a0b3a6-fe58-418a-8e53-442c9237e2b1",
+		"name": "GPT-OSSRFU API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"description": "API endpoints for the self-hosted LLM solution."
+	},
+	"item": [
+		{
+			"name": "Chat Service (CPU/GPU)",
+			"item": [
+				{
+					"name": "Get Available Models",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{chat_base_url}}/v1/models",
+							"host": [
+								"{{chat_base_url}}"
+							],
+							"path": [
+								"v1",
+							"models"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Chat Completion",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"model\": \"default\",\n    \"messages\": [\n        {\n            \"role\": \"user\",\n            \"content\": \"What is the meaning of life?\"\n        }\n    ],\n    \"stream\": false\n}"
+						},
+						"url": {
+							"raw": "{{chat_base_url}}/v1/chat/completions",
+							"host": [
+								"{{chat_base_url}}"
+							],
+							"path": [
+								"v1",
+							"chat",
+							"completions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Legacy Completion",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"model\": \"default\",\n    \"prompt\": \"Once upon a time in a land far, far away...\",\n    \"max_tokens\": 50,\n    \"stream\": false\n}"
+						},
+						"url": {
+							"raw": "{{chat_base_url}}/v1/completions",
+							"host": [
+								"{{chat_base_url}}"
+							],
+							"path": [
+								"v1",
+							"completions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Embeddings Service (CPU)",
+			"item": [
+				{
+					"name": "Get Available Models",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{embeddings_base_url}}/v1/models",
+							"host": [
+								"{{embeddings_base_url}}"
+							],
+							"path": [
+								"v1",
+							"models"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Embeddings",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"model\": \"default\",\n    \"input\": [\n        \"Your first text to embed\",\n        \"Your second text to embed\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{embeddings_base_url}}/v1/embeddings",
+							"host": [
+								"{{embeddings_base_url}}"
+							],
+							"path": [
+								"v1",
+							"embeddings"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{api_key}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "chat_base_url",
+			"value": "http://localhost:8000"
+		},
+		{
+			"key": "embeddings_base_url",
+			"value": "http://localhost:8001"
+		},
+		{
+			"key": "api_key",
+			"value": "troque-este-token-forte"
+		}
+	]
+}
